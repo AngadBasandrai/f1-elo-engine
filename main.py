@@ -46,7 +46,8 @@ for d in lines:
 f.close()
 
 y = 2012
-
+xlabels = ['2012']
+ny = True
 f = open('data')
 z = open('winners.txt', 'w')
 lines = f.readlines()
@@ -69,12 +70,16 @@ for n in range(len(lines)):
             try:
                 if s.index(drivers[i].name):
                     print(drivers[i].name + " has retired")
-                    drivers[i].upload()
                     drivers[i].retired = True
             except:
-                continue
-            
+                continue         
+        for driver in drivers:
+            driver.upload()
+        xlabels.append(str(y))
     else:
+        if ny:
+            ny = False
+        xlabels.append('')
         for i in range(len(drivers)):
             try:
                 opp = 0
@@ -101,9 +106,9 @@ for n in range(len(lines)):
                 drivers[i].ratingAdjust(score, points[expected])
             except:
                 continue
-
         for driver in drivers:
             driver.upload()
+
 drivers = sorted(drivers, key=lambda x: x.peakRating(), reverse=True)
 for driver in drivers:
     print(driver)
@@ -121,7 +126,6 @@ for driver in drivers:
 plt.xlabel('races')
 plt.ylabel('elo')
 ax.set_yticks(np.arange(int(np.nanmin(drivers[-1].history))-20, int(high)+20, 20))
-xlabels = ['12','','','','','','','','','','','','','','','','','','','','13','','','','','','','','','','','','','','','','','','','14','','','','','','','','','','','','','','','','','','','15','','','','','','','','','','','','','','','','','','','16','','','','','','','','','','','','','','','','','','','','','17','','','','','','','','','','','','','','','','','','','','18','','','','','','','','','','','','','','','','','','','','','19','','','','','','','','','','','','','','','','','','','','','20','','','','','','','','','','','','','','','','','21','','','','','','','','','','','','','','','','','','','','','','22','','','','','','','','','','','','','','','','','','','','','','23','','','','','','','','','','','','','','','','','','','','','','24','','','','','','','','','','','','','']
 x = np.arange(0,len(xlabels),1)
 ax.set_xticks(x)
 ax.set_xticklabels(xlabels)
