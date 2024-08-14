@@ -1,3 +1,14 @@
+Michael Schumacher
+Bruno Senna
+Vitaly Petrov
+Timo Glock
+Narain Karthikeyan
+Pedro De La Rosa
+Jerome D'Ambrosio
+Mark Webber
+Charles Pic
+Heikki Kovalainen
+Giedo Van Der Garde
 Jean Eric Vergne
 Jules Bianchi
 Adrian Sutil
@@ -54,4 +65,4 @@ Zhou Guanyu
 Liam Lawson
 Oscar Piastri
 Logan Sargeant
-Oliver Bearman 
+Oliver Bearman
