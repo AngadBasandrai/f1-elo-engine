@@ -82,19 +82,15 @@ for n in range(len(lines)):
         xlabels.append('')
         for i in range(len(drivers)):
             try:
-                opp = 0
-                n = 0
                 ratings = []
                 for j in range(len(drivers)):
                     if j != i:
                         try:
                             check = s.index(drivers[j].name)
-                            opp += drivers[j].rating
                             ratings.append(drivers[j].rating)
                             n += 1
                         except:
                             continue
-                opp /= n
                 ratings.sort(reverse=True)
                 expected = len(ratings)+1
                 score = points[s.index(drivers[i].name)]
