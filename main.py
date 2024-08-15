@@ -12,7 +12,7 @@ class Driver:
         self.k = 1
     
     def ratingAdjust(self, scored, expected):
-        if scored >= expected*21/25:
+        if scored >= expected*20/25:
             self.buffer = self.rating + self.k * (scored-(expected*20/25))
         else:
             self.buffer = self.rating + self.k * (scored-(expected))
@@ -45,8 +45,8 @@ for d in lines:
     drivers.append(Driver(d[:-1]))
 f.close()
 
-y = 2012
-xlabels = ['2012']
+y = 2011
+xlabels = [str(y)[-2:]]
 ny = True
 f = open('data')
 z = open('winners.txt', 'w')
@@ -65,7 +65,7 @@ for n in range(len(lines)):
         z.write(str(y) + ": ")
         z.write(str(p) + "\n")
         y += 1
-    if s[0] == "~":
+    elif s[0] == "~":
         for i in range(len(drivers)):
             try:
                 if s.index(drivers[i].name):
@@ -75,7 +75,7 @@ for n in range(len(lines)):
                 continue         
         for driver in drivers:
             driver.upload()
-        xlabels.append(str(y))
+        xlabels.append(str(y)[-2:])
     else:
         if ny:
             ny = False
@@ -96,7 +96,7 @@ for n in range(len(lines)):
                             continue
                 opp /= n
                 ratings.sort(reverse=True)
-                expected = len(ratings)+2
+                expected = len(ratings)+1
                 score = points[s.index(drivers[i].name)]
                 for l in range(len(ratings)):
                     if ratings[l] <= drivers[i].rating:
