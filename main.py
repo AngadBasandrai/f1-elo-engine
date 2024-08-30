@@ -15,7 +15,10 @@ class Driver:
         if scored >= expected*20/25:
             self.buffer = self.rating + self.k * (scored-(expected*20/25))
         else:
-            self.buffer = self.rating + self.k * (scored-(expected))
+            if expected >= 18 and scored <= -18:
+                self.buffer = self.rating + self.k * (scored-expected*(20/25)) * 0.1
+            else:
+                self.buffer = self.rating + self.k * (scored-(expected))
     def upload(self):
         if self.retired:
             self.history.append(np.nan)
@@ -36,7 +39,7 @@ class Driver:
         else:
             return self.name + ": hasn't made professional debut"
 
-points = [25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-32,-39,-46,-53,-60,-67,-74,-81,-89]
+points = [25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-25,-25,-25,-25,-25,-25,-25,-25,-25]
 
 drivers = []
 f = open('drivers.txt')
