@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class Driver:
-    def __init__(self, name, rating=1000):
+    def __init__(self, name, rating=800):
         self.name = name
         self.rating = rating
         self.history = []
@@ -12,13 +12,9 @@ class Driver:
         self.k = 1
     
     def ratingAdjust(self, scored, expected):
-        if scored >= expected*20/25:
-            self.buffer = self.rating + self.k * (scored-(expected*20/25))
-        else:
-            if expected >= 18 and scored <= -18:
-                self.buffer = self.rating + self.k * (scored-expected*(20/25)) * 0.1
-            else:
-                self.buffer = self.rating + self.k * (scored-(expected))
+            self.buffer = self.rating + self.k * (scored-(expected))
+            if self.buffer < 100:   
+                self.buffer = 100
     def upload(self):
         if self.retired:
             self.history.append(np.nan)
@@ -30,16 +26,19 @@ class Driver:
             self.history.append(np.nan)
 
     def effRating(self):
-        return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
+        try:
+            return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
+        except:
+            return 800
     def peakRating(self):
-        return np.nanmax(self.history+[self.rating]) if self.started else 1000
+        return np.nanmax(self.history+[self.rating]) if self.started else 800
     def __repr__(self):
         if self.started:
-            return self.name + ": 1000 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1000)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
+            return self.name + ": 800 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-800)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
         else:
             return self.name + ": hasn't made professional debut"
 
-points = [25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-25,-25,-25,-25,-25,-25,-25,-25,-25]
+points = [25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-32,-39,-46,-53,-60,-67,-74,-81,-89]
 
 drivers = []
 f = open('drivers.txt')
@@ -95,14 +94,16 @@ for n in range(len(lines)):
                         except:
                             continue
                 ratings.sort(reverse=True)
-                expected = len(ratings)+1
-                score = points[s.index(drivers[i].name)]
-                for l in range(len(ratings)):
-                    if ratings[l] <= drivers[i].rating:
-                        expected = l
+                oppAvg = sum(ratings)/len(ratings)
+                ex = 0
+                for q in range(len(ratings)):
+                    if ratings[q] <= drivers[i].rating:
+                        ex = q
                         break
+                expected = (1/(1+(10**((oppAvg - drivers[i].rating)/800))))*(points[ex])
+                score = points[s.index(drivers[i].name)]
                 drivers[i].started = True
-                drivers[i].ratingAdjust(score, points[expected])
+                drivers[i].ratingAdjust(score, expected)
             except:
                 continue
         for driver in drivers:
@@ -124,11 +125,11 @@ for driver in drivers:
 
 plt.xlabel('races')
 plt.ylabel('elo')
-ax.set_yticks(np.arange(int(np.nanmin(drivers[-1].history))-20, int(high)+20, 20))
+ax.set_yticks(np.arange(int(np.nanmin(drivers[-1].history)), int(high), 20))
 x = np.arange(0,len(xlabels),1)
 ax.set_xticks(x)
 ax.set_xticklabels(xlabels)
-plt.legend(loc="lower right",bbox_to_anchor=(1.1, -0.1), fontsize="6")
+plt.legend(loc="lower right",bbox_to_anchor=(1.1, -0.1), fontsize="5")
 #plt.tight_layout()
 ax = plt.gca()
 for tick in ax.get_yticks():
