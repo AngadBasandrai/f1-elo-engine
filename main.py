@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 class Driver:
-    def __init__(self, name, rating=800):
+    def __init__(self, name, rating=1200):
         self.name = name
         self.rating = rating
         self.history = []
@@ -29,16 +29,16 @@ class Driver:
         try:
             return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
         except:
-            return 800
+            return 1200
     def peakRating(self):
-        return np.nanmax(self.history+[self.rating]) if self.started else 800
+        return np.nanmax(self.history+[self.rating]) if self.started else 1200
     def __repr__(self):
         if self.started:
-            return self.name + ": 800 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-800)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
+            return self.name + ": 1200 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1200)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
         else:
             return self.name + ": hasn't made professional debut"
 
-points = [25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-32,-39,-46,-53,-60,-67,-74,-81,-89]
+points = [25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30]
 
 drivers = []
 f = open('drivers.txt')
@@ -47,7 +47,7 @@ for d in lines:
     drivers.append(Driver(d[:-1]))
 f.close()
 
-y = 2011
+y = 2010
 xlabels = [str(y)[-2:]]
 ny = True
 f = open('data')
@@ -66,18 +66,31 @@ for n in range(len(lines)):
         p = sorted(p,key = lambda x: x[1], reverse=True)
         z.write(str(y) + ": ")
         z.write(str(p) + "\n")
+        diff = p[0][1] - p[1][1]
+        z.write("Lead of championship: " + str(diff) + ",\t")
+        diffFromLast = p[0][1] - p[-1][1]
+        z.write("Gap between first and last: " + str(diffFromLast) + ",\t")
+        avgOppRating = 0
+        for i in p:
+            avgOppRating += i[1]
+        avgOppRating -= p[0][-1]
+        avgOppRating /= len(p)-1
+        diffFromAvg = p[0][1] - avgOppRating
+        z.write("Gap between first and average rating(not including champion): " + str(diffFromAvg) + ",\t")
+        z.write("Average Rating(not including champion): " + str(avgOppRating) + "\n\n")
         y += 1
+        xlabels.append((str(y)[-2:]))
+        for driver in drivers:
+            driver.upload()
     elif s[0] == "~":
         for i in range(len(drivers)):
             try:
                 if s.index(drivers[i].name):
                     print(drivers[i].name + " has retired")
+                    drivers[i].upload()
                     drivers[i].retired = True
             except:
-                continue         
-        for driver in drivers:
-            driver.upload()
-        xlabels.append(str(y)[-2:])
+                continue
     else:
         if ny:
             ny = False
@@ -100,7 +113,7 @@ for n in range(len(lines)):
                     if ratings[q] <= drivers[i].rating:
                         ex = q
                         break
-                expected = (1/(1+(10**((oppAvg - drivers[i].rating)/800))))*(points[ex])
+                expected = (((1/(1+(10**((oppAvg - drivers[i].rating)/200))))*2)-1)*25
                 score = points[s.index(drivers[i].name)]
                 drivers[i].started = True
                 drivers[i].ratingAdjust(score, expected)
@@ -125,19 +138,14 @@ for driver in drivers:
 
 plt.xlabel('races')
 plt.ylabel('elo')
-ax.set_yticks(np.arange(int(np.nanmin(drivers[-1].history)), int(high), 20))
+ax.set_yticks(np.arange(int(np.nanmin(drivers[-1].history)), int(high), 50))
 x = np.arange(0,len(xlabels),1)
 ax.set_xticks(x)
 ax.set_xticklabels(xlabels)
 plt.legend(loc="lower right",bbox_to_anchor=(1.1, -0.1), fontsize="5")
-#plt.tight_layout()
 ax = plt.gca()
 for tick in ax.get_yticks():
     ax.axhline(y=tick, color='gray', linestyle='--', linewidth=0.7)
-ax.axhline(y=1200, color='black', linestyle = '--', linewidth=1.7)
-ax.axhline(y=1100, color='black', linestyle = '--', linewidth=1.7)
-ax.axhline(y=1000, color='black', linestyle = 'dotted', linewidth=3.7)
-ax.axhline(y=900, color='black', linestyle = '--', linewidth=1.7)
 for tick, label in zip(x, xlabels):
     if len(label) > 0:
         ax.axvline(x=tick, color='gray', linestyle='-', linewidth=1)

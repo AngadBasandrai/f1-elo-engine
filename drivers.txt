@@ -1,3 +1,6 @@
+Lucas Di Grassi
+Sakon Yamamoto
+Christian Klien
 Jaime Alguersuari
 Sebastian Buemi
 Rubens Barichello
@@ -73,3 +76,4 @@ Liam Lawson
 Oscar Piastri
 Logan Sargeant
 Oliver Bearman
+Franco Colapinto
