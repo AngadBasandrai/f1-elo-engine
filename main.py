@@ -9,11 +9,19 @@ class Driver:
         self.buffer = self.rating
         self.started = False
         self.retired = False
-        self.k = 1
+        self.races = 0
     
     def ratingAdjust(self, scored, expected):
-            self.buffer = self.rating + self.k * (scored-(expected))
-            if self.buffer < 100:   
+            if self.races <= 10:
+                if scored-expected > 0:
+                    self.buffer = self.rating + (scored-(expected)) * 2
+                else:
+                    self.buffer = self.rating + (scored-(expected))
+            elif self.rating > 1300:
+                self.buffer = self.rating + (scored-(expected)) * 0.5
+            else:
+                self.buffer = self.rating + (scored-(expected))
+            if self.buffer < 100:
                 self.buffer = 100
     def upload(self):
         if self.retired:
@@ -73,7 +81,7 @@ for n in range(len(lines)):
         avgOppRating = 0
         for i in p:
             avgOppRating += i[1]
-        avgOppRating -= p[0][-1]
+        avgOppRating -= p[0][1]
         avgOppRating /= len(p)-1
         diffFromAvg = p[0][1] - avgOppRating
         z.write("Gap between first and average rating(not including champion): " + str(diffFromAvg) + ",\t")
@@ -116,6 +124,7 @@ for n in range(len(lines)):
                 expected = (((1/(1+(10**((oppAvg - drivers[i].rating)/200))))*2)-1)*25
                 score = points[s.index(drivers[i].name)]
                 drivers[i].started = True
+                drivers[i].races += 1
                 drivers[i].ratingAdjust(score, expected)
             except:
                 continue
@@ -149,6 +158,11 @@ for tick in ax.get_yticks():
 for tick, label in zip(x, xlabels):
     if len(label) > 0:
         ax.axvline(x=tick, color='gray', linestyle='-', linewidth=1)
+
+ax.axhline(y=1300, color='black', linestyle='-', linewidth=2)
+ax.axhline(y=1200, color='black', linestyle='-', linewidth=2)
+ax.axhline(y=1100, color='black', linestyle='-', linewidth=2)
+
 plt.show()
 
 f.close()
