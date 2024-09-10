@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import argparse
 
 class Driver:
     def __init__(self, name, rating=1200,started=False,retired=False,races=0):
@@ -231,8 +232,10 @@ def show():
     drivers = sorted(drivers, key=lambda x: x.effRating(), reverse=True)
     fig, ax = plt.subplots()
 
-    choice = input("Decide which to show or show all(all/not)?")
-    if choice == "all":
+    toViewFile = open("toView.csv", "r")
+    toView = toViewFile.read().split(',')
+    toViewFile.close()
+    if len(toView) == 1 and toView[0] == '':
         for driver in drivers:
             z = driver.history
             if driver.started:
@@ -241,8 +244,7 @@ def show():
                 ax.plot(z, label = driver.name)
     else:
         for driver in drivers:
-            r = input(f"{driver.name}, show or not(y/n)?")
-            if r == "y":
+            if driver.name in toView:
                 z = driver.history
                 if driver.started:
                     if not driver.retired:
@@ -270,4 +272,15 @@ def show():
 
     plt.show()
 
-show()
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="Recalculate or load the results")
+    parser.add_argument("-c", "--calculate", action="store_true", help="Recalculate ratings")
+    parser.add_argument("-l", "--load", action="store_true", help="Load previously calculated ratings")
+
+    args = parser.parse_args()
+
+    if args.load:
+        show()
+    elif args.calculate or not any(vars(args).values()):
+        recalculate()
