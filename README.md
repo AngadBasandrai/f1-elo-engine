@@ -44,7 +44,7 @@ $K_n = 0.5*K$
 
 ### Data Parsing
 It iterates through <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/data.csv">data.csv</a> and for each line performs the above mentioned calculations for each player and points are scored according to the points table defined in <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/main.py">main.py</a> \
-Upon encountering a line beginning with '--', it will stores the ratings at that point into <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/winners.txt">winners.txt</a>\
+Upon encountering a line beginning with '--', it will store the ratings at that point into <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/winners.txt">winners.txt</a>\
 When a line starts with '~', it retires the players who are in that line
 
 At the end it stores all the data into <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/driverData.csv">driverData.csv</a> from where it can be loaded anytime using 

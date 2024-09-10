@@ -61,7 +61,7 @@ def recalculate():
         drivers.append(Driver(d))
     f.close()
 
-    y = 2010
+    y = 2009
     xlabels = [str(y)[-2:]]
     ny = True
     f = open('data.csv')
