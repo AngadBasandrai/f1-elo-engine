@@ -29,13 +29,17 @@ so to adjust for negative points below top 10 finishes \
 $E = (2Q - 1) * 25$  \
 $E$ = $Expected$ $Points$ 
 
-Then expected score is compared with ponts scored \
+Then expected score is compared with points scored \
 $S = Points$ $Scored$ \
 $R_n = R + K*(S-E)$ \
 $R_n = New$ $Rating$
 
-if the number of races participated in is less than 10 than when a player performs better than expected $K_n = 2*K$ \
-if the rating goes above 1300 then $K_n = 0.5*K$
+if the number of races participated in is less than 10 than when a player performs better than expected  then \
+ $K_n = 2*K$
+ 
+
+if the rating goes above 1300 then \
+$K_n = 0.5*K$
 
 ### Data Parsing
 It iterates through <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/data.csv">data.csv</a> and for each line performs the above mentioned calculations for each player and points are scored according to the points table defined in <a href="https://github.com/AngadBasandrai/f1-elo-engine/blob/main/main.py">main.py</a> \
