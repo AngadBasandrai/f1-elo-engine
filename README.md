@@ -21,10 +21,11 @@
 ## Explanation
 
 ### ELO System
-$Q = \frac{1}{1 + 10^{{R - \bar{R}}/200}}$ \
+$Q = \frac{1}{1 + 10^{{∆R}/200}}$ \
 $Q = Win$ $Chance$ \
 $R = Player$ $Rating$ \
 $\bar{R} = Average$ $Opponent$ $Rating$ \
+$∆R = R - \bar{R}$ \
 so to adjust for negative points below top 10 finishes \
 $E = (2Q - 1) * 25$  \
 $E$ = $Expected$ $Points$ 
