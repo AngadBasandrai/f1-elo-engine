@@ -212,7 +212,10 @@ def load():
                 history.append(float(i))
         driver.addHistory(history)
         drivers.append(driver)
+    return drivers
 
+def show():
+    drivers = load()
     xlabelsfile = open('xlabels.csv', 'r')
     xlabels = xlabelsfile.read()
     xlabelsfile.close()
@@ -228,12 +231,23 @@ def load():
     drivers = sorted(drivers, key=lambda x: x.effRating(), reverse=True)
     fig, ax = plt.subplots()
 
-    for driver in drivers:
-        z = driver.history
-        if driver.started:
-            if not driver.retired:
-                z.append(driver.rating)
-            ax.plot(z, label = driver.name)
+    choice = input("Decide which to show or show all(all/not)?")
+    if choice == "all":
+        for driver in drivers:
+            z = driver.history
+            if driver.started:
+                if not driver.retired:
+                    z.append(driver.rating)
+                ax.plot(z, label = driver.name)
+    else:
+        for driver in drivers:
+            r = input(f"{driver.name}, show or not(y/n)?")
+            if r == "y":
+                z = driver.history
+                if driver.started:
+                    if not driver.retired:
+                        z.append(driver.rating)
+                    ax.plot(z, label = driver.name)
 
     plt.xlabel('races')
     plt.ylabel('elo')
@@ -256,5 +270,4 @@ def load():
 
     plt.show()
 
-
-load()
+show()
