@@ -4,7 +4,7 @@ import pandas as pd
 import argparse
 
 class Driver:
-    def __init__(self, name, rating=1200,started=False,retired=False,races=0):
+    def __init__(self, name, rating=1400,started=False,retired=False,races=0):
         self.name = name
         self.rating = rating
         self.history = []
@@ -22,12 +22,12 @@ class Driver:
                     self.buffer = self.rating + (scored-(expected)) * 2
                 else:
                     self.buffer = self.rating + (scored-(expected))
-            elif self.rating > 1300:
+            elif self.rating > 1500:
                 self.buffer = self.rating + (scored-(expected)) * 0.5
             else:
                 self.buffer = self.rating + (scored-(expected))
-            if self.buffer < 100:
-                self.buffer = 100
+            if self.buffer < 1000:
+                self.buffer = 1000
     def upload(self):
         if self.retired:
             self.history.append(np.nan)
@@ -191,9 +191,9 @@ def recalculate():
         if len(label) > 0:
             ax.axvline(x=tick, color='gray', linestyle='-', linewidth=1)
 
+    ax.axhline(y=1500, color='black', linestyle='-', linewidth=2)
+    ax.axhline(y=1400, color='black', linestyle='-', linewidth=2)
     ax.axhline(y=1300, color='black', linestyle='-', linewidth=2)
-    ax.axhline(y=1200, color='black', linestyle='-', linewidth=2)
-    ax.axhline(y=1100, color='black', linestyle='-', linewidth=2)
 
     plt.show()
 
@@ -266,9 +266,9 @@ def show():
         if len(label) > 1:
             ax.axvline(x=tick, color='gray', linestyle='-', linewidth=1)
 
+    ax.axhline(y=1500, color='black', linestyle='-', linewidth=2)
+    ax.axhline(y=1400, color='black', linestyle='-', linewidth=2)
     ax.axhline(y=1300, color='black', linestyle='-', linewidth=2)
-    ax.axhline(y=1200, color='black', linestyle='-', linewidth=2)
-    ax.axhline(y=1100, color='black', linestyle='-', linewidth=2)
 
     plt.show()
 
