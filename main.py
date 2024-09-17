@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import argparse
+import sys
 
 class Driver:
     def __init__(self, name, rating=1400,started=False,retired=False,races=0):
@@ -12,6 +13,7 @@ class Driver:
         self.started = started
         self.retired = retired
         self.races = races
+        self.preSeason = 1400
 
     def addHistory(self, history):
         self.history = history
@@ -61,7 +63,7 @@ def recalculate():
         drivers.append(Driver(d))
     f.close()
 
-    y = 2009
+    y = 2008
     xlabels = [str(y)[-2:]]
     ny = True
     f = open('data.csv')
@@ -71,10 +73,17 @@ def recalculate():
         s = lines[n].split(',')
         p = []
         if s[0] == "--":
+            maxDiff = ["-",-sys.maxsize-1]
+            minDiff = ["-",-sys.maxsize-1]
             for i in range(len(drivers)):
                 try:
                     if s.index(drivers[i].name):
                         p.append([drivers[i].name, drivers[i].effRating()])
+                        if drivers[i].effRating() - drivers[i].preSeason > maxDiff[1]:
+                            maxDiff = [drivers[i].name, drivers[i].effRating() - drivers[i].preSeason]
+                        if drivers[i].preSeason - drivers[i].effRating() > minDiff[1]:
+                            minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
+                        drivers[i].preSeason = drivers[i].effRating()
                 except:
                     continue
             p = sorted(p,key = lambda x: x[1], reverse=True)
@@ -91,7 +100,12 @@ def recalculate():
             avgOppRating /= len(p)-1
             diffFromAvg = p[0][1] - avgOppRating
             z.write("Gap between first and average rating(not including champion): " + str(diffFromAvg) + ",\t")
-            z.write("Average Rating(not including champion): " + str(avgOppRating) + "\n\n")
+            z.write("Average Rating(not including champion): " + str(avgOppRating) + "\t")
+            z.write(f"Best Performer: {maxDiff[0]}, gained {maxDiff[1]} rating\t")
+            if minDiff[1] < 0:
+                z.write(f"Worst Performer: {minDiff[0]}, gained {-minDiff[1]} rating\t")
+            else:
+                z.write(f"Worst Performer: {minDiff[0]}, lost {minDiff[1]} rating\n\n")
             y += 1
             xlabels.append((str(y)[-2:]))
             for driver in drivers:
