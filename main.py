@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class Driver:
-    def __init__(self, name, rating=1400,started=False,retired=False,races=0):
+    def __init__(self, name, rating=1400,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0):
         self.name = name
         self.rating = rating
         self.history = []
@@ -14,6 +14,10 @@ class Driver:
         self.retired = retired
         self.races = races
         self.preSeason = 1400
+        self.points = points
+        self.championshipPoints = championshipPoints
+        self.wins = wins
+        self.podiums = podiums
 
     def addHistory(self, history):
         self.history = history
@@ -66,7 +70,7 @@ def recalculate():
     y = 2007
     xlabels = [str(y)[-2:]]
     ny = True
-    f = open('data.csv')
+    f = open('data.csv','r')
     z = open('winners.txt', 'w')
     lines = f.readlines()
     for n in range(len(lines)):
@@ -144,6 +148,13 @@ def recalculate():
                     drivers[i].started = True
                     drivers[i].races += 1
                     drivers[i].ratingAdjust(score, expected)
+                    drivers[i].points += score
+                    if score > 0:
+                        drivers[i].championshipPoints += score
+                    if score >= 15:
+                        drivers[i].podiums += 1
+                    if score >= 25:
+                        drivers[i].wins += 1
                 except:
                     continue
             for driver in drivers:
@@ -153,7 +164,7 @@ def recalculate():
     for driver in drivers:
         print(driver)
     high = np.nanmax(drivers[0].history)
-    drivers = sorted(drivers, key=lambda x: x.effRating(), reverse=True)
+    drivers = sorted(drivers, key=lambda x: x.wins, reverse=True)
     fig, ax = plt.subplots()
     z.close()
     _names = []
@@ -162,6 +173,14 @@ def recalculate():
     _started = []
     _retired = []
     _races = []
+    _points = []
+    _ppr = []
+    _champpoints = []
+    _champppr = []
+    _wins = []
+    _winspr = []
+    _podiums = []
+    _podiumspr = []
     for driver in drivers:
         z = driver.history
         if driver.started:
@@ -174,6 +193,14 @@ def recalculate():
         _started.append(driver.started)
         _retired.append(driver.retired)
         _races.append(driver.races)
+        _points.append(driver.points)
+        _ppr.append(driver.points/driver.races)
+        _champpoints.append(driver.championshipPoints)
+        _champppr.append(driver.championshipPoints/driver.races)
+        _wins.append(driver.wins)
+        _winspr.append(driver.wins/driver.races)
+        _podiums.append(driver.podiums)
+        _podiumspr.append(driver.podiums/driver.races)
 
     data = {
         'Name':_names,
@@ -181,7 +208,15 @@ def recalculate():
         'Rating':_ratings,
         'Started':_started,
         'Retired':_retired,
-        'Races':_races
+        'Races':_races,
+        'Points':_points,
+        'Points Per Race':_ppr,
+        'Championship Points':_champpoints,
+        'Championship Points Per Race':_champppr,
+        'Wins':_wins,
+        'Wins Per Race':_winspr,
+        'Podiums':_podiums,
+        'Podiums Per Race':_podiumspr,
     }
 
     df = pd.DataFrame(data)
@@ -217,7 +252,7 @@ def load():
     drivers = []
     df = pd.read_csv('driverData.csv')
     for index, row in df.iterrows():
-        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'])
+        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'])
         list = row['Rating History'][1:-1].split(', ')
         history = []
         for i in list:
