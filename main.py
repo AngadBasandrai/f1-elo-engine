@@ -40,7 +40,7 @@ class Driver:
                     self.buffer = self.rating + (scored-(expected)) * 2 * k
                 else:
                     self.buffer = self.rating + (scored-(expected)) * k
-            elif self.rating > 1500:
+            elif self.rating > 1600:
                 self.buffer = self.rating + (scored-(expected)) * 0.5 * k
             else:
                 self.buffer = self.rating + (scored-(expected)) * k
