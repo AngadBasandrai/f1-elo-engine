@@ -109,7 +109,9 @@ def recalculate():
             newMaxDiff[0].bestRookie = y
             p = sorted(p,key = lambda x: x[1], reverse=True)
             z.write(str(y) + ": ")
-            z.write(str(p) + "\n")
+            for j in p:
+                z.write(f"{j[0].name, j[1]}")
+            z.write("\n")
             diff = p[0][1] - p[1][1]
             p[0][0].worldChampionships += 1
             p[0][0].addWorldChampionship(y)
@@ -404,7 +406,9 @@ def sprintRecalculate():
             maxDiff[0].addBestPerformer(y)
             p = sorted(p,key = lambda x: x[1], reverse=True)
             z.write(str(y) + ": ")
-            z.write(str(p) + "\n")
+            for j in p:
+                z.write(f"{j[0].name, j[1]}")
+            z.write("\n")
             diff = p[0][1] - p[1][1]
             p[0][0].worldChampionships += 1
             p[0][0].addWorldChampionship(y)
