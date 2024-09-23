@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class Driver:
-    def __init__(self, name, rating=1400,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0):
+    def __init__(self, name, rating=1400,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0,seasons=0,worldChampionships=0,bestRookie=None):
         self.name = name
         self.rating = rating
         self.history = []
@@ -18,9 +18,20 @@ class Driver:
         self.championshipPoints = championshipPoints
         self.wins = wins
         self.podiums = podiums
+        self.seasons = seasons
+        self.worldChampionships = 0
+        self.worldChampionshipYear = []
+        self.bestPerformer = []
+        self.bestRookie = bestRookie
 
     def addHistory(self, history):
         self.history = history
+    
+    def addBestPerformer(self, year):
+        self.bestPerformer.append(year)
+    
+    def addWorldChampionship(self, year):
+        self.worldChampionshipYear.append(year)
     
     def ratingAdjust(self, scored, expected, k = 1):
             if self.races <= 10:
@@ -77,23 +88,31 @@ def recalculate():
         s = lines[n].split(',')
         p = []
         if s[0] == "--":
-            maxDiff = ["-",-sys.maxsize-1]
+            maxDiff = [None,-sys.maxsize-1]
             minDiff = ["-",-sys.maxsize-1]
+            newMaxDiff = [None,-sys.maxsize-1]
             for i in range(len(drivers)):
                 try:
                     if s.index(drivers[i].name):
-                        p.append([drivers[i].name, drivers[i].effRating()])
+                        drivers[i].seasons += 1
+                        p.append([drivers[i], drivers[i].effRating()])
                         if drivers[i].effRating() - drivers[i].preSeason > maxDiff[1]:
-                            maxDiff = [drivers[i].name, drivers[i].effRating() - drivers[i].preSeason]
+                            maxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         if drivers[i].preSeason - drivers[i].effRating() > minDiff[1]:
                             minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
+                        if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1:
+                            newMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         drivers[i].preSeason = drivers[i].effRating()
                 except:
                     continue
+            maxDiff[0].addBestPerformer(y)
+            newMaxDiff[0].bestRookie = y
             p = sorted(p,key = lambda x: x[1], reverse=True)
             z.write(str(y) + ": ")
             z.write(str(p) + "\n")
             diff = p[0][1] - p[1][1]
+            p[0][0].worldChampionships += 1
+            p[0][0].addWorldChampionship(y)
             z.write("Lead of championship: " + str(diff) + ",\t")
             diffFromLast = p[0][1] - p[-1][1]
             z.write("Gap between first and last: " + str(diffFromLast) + ",\t")
@@ -105,11 +124,15 @@ def recalculate():
             diffFromAvg = p[0][1] - avgOppRating
             z.write("Gap between first and average rating(not including champion): " + str(diffFromAvg) + ",\t")
             z.write("Average Rating(not including champion): " + str(avgOppRating) + "\t")
-            z.write(f"Best Performer: {maxDiff[0]}, gained {maxDiff[1]} rating\t")
+            z.write(f"Best Performer: {maxDiff[0].name}, gained {maxDiff[1]} rating\t")
             if minDiff[1] < 0:
                 z.write(f"Worst Performer: {minDiff[0]}, gained {-minDiff[1]} rating\t")
             else:
-                z.write(f"Worst Performer: {minDiff[0]}, lost {minDiff[1]} rating\n\n")
+                z.write(f"Worst Performer: {minDiff[0]}, lost {minDiff[1]} rating\t")
+            if newMaxDiff[1] > 0:
+                z.write(f"Best Rookie: {newMaxDiff[0].name}, gained {newMaxDiff[1]} rating\n\n")
+            else:
+                z.write(f"Best Rookie: {newMaxDiff[0].name}, lost {-newMaxDiff[1]} rating\n\n")
             y += 1
             xlabels.append((str(y)[-2:]))
             for driver in drivers:
@@ -173,6 +196,7 @@ def recalculate():
     _started = []
     _retired = []
     _races = []
+    _seasons = []
     _points = []
     _ppr = []
     _champpoints = []
@@ -181,6 +205,10 @@ def recalculate():
     _winspr = []
     _podiums = []
     _podiumspr = []
+    _wdc = []
+    _wdcs = []
+    _bestPerformer = []
+    _bestRookie = []
     for driver in drivers:
         z = driver.history
         if driver.started:
@@ -193,6 +221,7 @@ def recalculate():
         _started.append(driver.started)
         _retired.append(driver.retired)
         _races.append(driver.races)
+        _seasons.append(driver.seasons)
         _points.append(driver.points)
         _ppr.append(driver.points/driver.races)
         _champpoints.append(driver.championshipPoints)
@@ -201,6 +230,10 @@ def recalculate():
         _winspr.append(driver.wins/driver.races)
         _podiums.append(driver.podiums)
         _podiumspr.append(driver.podiums/driver.races)
+        _wdc.append(driver.worldChampionships)
+        _wdcs.append(driver.worldChampionshipYear)
+        _bestPerformer.append(driver.bestPerformer)
+        _bestRookie.append(driver.bestRookie)
 
     data = {
         'Name':_names,
@@ -209,6 +242,7 @@ def recalculate():
         'Started':_started,
         'Retired':_retired,
         'Races':_races,
+        'Seasons':_seasons,
         'Points':_points,
         'Points Per Race':_ppr,
         'Championship Points':_champpoints,
@@ -217,6 +251,10 @@ def recalculate():
         'Wins Per Race':_winspr,
         'Podiums':_podiums,
         'Podiums Per Race':_podiumspr,
+        'World Championships':_wdc,
+        'World Championship Years':_wdcs,
+        'Best Performer':_bestPerformer,
+        'Best Rookie':_bestRookie
     }
 
     df = pd.DataFrame(data)
@@ -252,15 +290,21 @@ def load():
     drivers = []
     df = pd.read_csv('driverData.csv')
     for index, row in df.iterrows():
-        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'])
-        list = row['Rating History'][1:-1].split(', ')
+        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'],row['Seasons'],row['World Championships'],row['Best Rookie'])
+        listH = row['Rating History'][1:-1].split(', ')
+        listWDC = row['World Championship Years'][1:-1].split(', ')
+        listBP = row['Best Performer'][1:-1].split(', ')
         history = []
-        for i in list:
+        for i in listH:
             if i == "nan":
                 history.append(np.nan)
             else:
                 history.append(float(i))
         driver.addHistory(history)
+        for i in listWDC:
+            driver.addWorldChampionship(i)
+        for i in listBP:
+            driver.addBestPerformer(i)
         drivers.append(driver)
     return drivers
 
@@ -340,23 +384,30 @@ def sprintRecalculate():
         s = lines[n].split(',')
         p = []
         if s[0] == "--":
-            maxDiff = ["-",-sys.maxsize-1]
+            maxDiff = [None,-sys.maxsize-1]
             minDiff = ["-",-sys.maxsize-1]
+            newMaxDiff = [None,-sys.maxsize-1]
             for i in range(len(drivers)):
                 try:
                     if s.index(drivers[i].name):
-                        p.append([drivers[i].name, drivers[i].effRating()])
+                        drivers[i].seasons += 1
+                        p.append([drivers[i], drivers[i].effRating()])
                         if drivers[i].effRating() - drivers[i].preSeason > maxDiff[1]:
-                            maxDiff = [drivers[i].name, drivers[i].effRating() - drivers[i].preSeason]
+                            maxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         if drivers[i].preSeason - drivers[i].effRating() > minDiff[1]:
                             minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
+                        if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1:
+                            newMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         drivers[i].preSeason = drivers[i].effRating()
                 except:
                     continue
+            maxDiff[0].addBestPerformer(y)
             p = sorted(p,key = lambda x: x[1], reverse=True)
             z.write(str(y) + ": ")
             z.write(str(p) + "\n")
             diff = p[0][1] - p[1][1]
+            p[0][0].worldChampionships += 1
+            p[0][0].addWorldChampionship(y)
             z.write("Lead of championship: " + str(diff) + ",\t")
             diffFromLast = p[0][1] - p[-1][1]
             z.write("Gap between first and last: " + str(diffFromLast) + ",\t")
@@ -368,11 +419,19 @@ def sprintRecalculate():
             diffFromAvg = p[0][1] - avgOppRating
             z.write("Gap between first and average rating(not including champion): " + str(diffFromAvg) + ",\t")
             z.write("Average Rating(not including champion): " + str(avgOppRating) + "\t")
-            z.write(f"Best Performer: {maxDiff[0]}, gained {maxDiff[1]} rating\t")
+            z.write(f"Best Performer: {maxDiff[0].name}, gained {maxDiff[1]} rating\t")
             if minDiff[1] < 0:
                 z.write(f"Worst Performer: {minDiff[0]}, gained {-minDiff[1]} rating\t")
             else:
-                z.write(f"Worst Performer: {minDiff[0]}, lost {minDiff[1]} rating\n\n")
+                z.write(f"Worst Performer: {minDiff[0]}, lost {minDiff[1]} rating\t")
+            try:
+                newMaxDiff[0].bestRookie = y
+                if newMaxDiff[1] > 0:
+                    z.write(f"Best Rookie: {newMaxDiff[0].name}, gained {newMaxDiff[1]} rating\n\n")
+                else:
+                    z.write(f"Best Rookie: {newMaxDiff[0].name}, lost {-newMaxDiff[1]} rating\n\n")
+            except:
+                z.write("No Rookies\n\n")
             y += 1
             xlabels.append((str(y)[-2:]))
             for driver in drivers:
@@ -436,6 +495,7 @@ def sprintRecalculate():
     _started = []
     _retired = []
     _races = []
+    _seasons = []
     _points = []
     _ppr = []
     _champpoints = []
@@ -444,6 +504,10 @@ def sprintRecalculate():
     _winspr = []
     _podiums = []
     _podiumspr = []
+    _wdc = []
+    _wdcs = []
+    _bestPerformer = []
+    _bestRookie = []
     for driver in drivers:
         z = driver.history
         if driver.started:
@@ -456,21 +520,19 @@ def sprintRecalculate():
         _started.append(driver.started)
         _retired.append(driver.retired)
         _races.append(driver.races)
+        _seasons.append(driver.seasons)
         _points.append(driver.points)
+        _ppr.append(driver.points/driver.races)
         _champpoints.append(driver.championshipPoints)
+        _champppr.append(driver.championshipPoints/driver.races)
         _wins.append(driver.wins)
+        _winspr.append(driver.wins/driver.races)
         _podiums.append(driver.podiums)
-        if driver.races > 0:
-            _ppr.append(driver.points/driver.races)
-            _champppr.append(driver.championshipPoints/driver.races)
-            _winspr.append(driver.wins/driver.races)
-            _podiumspr.append(driver.podiums/driver.races)
-        else:
-            _ppr.append(0)
-            _champppr.append(0)
-            _winspr.append(0)
-            _podiumspr.append(0)
-
+        _podiumspr.append(driver.podiums/driver.races)
+        _wdc.append(driver.worldChampionships)
+        _wdcs.append(driver.worldChampionshipYear)
+        _bestPerformer.append(driver.bestPerformer)
+        _bestRookie.append(driver.bestRookie)
 
     data = {
         'Name':_names,
@@ -479,6 +541,7 @@ def sprintRecalculate():
         'Started':_started,
         'Retired':_retired,
         'Races':_races,
+        'Seasons':_seasons,
         'Points':_points,
         'Points Per Race':_ppr,
         'Championship Points':_champpoints,
@@ -487,6 +550,10 @@ def sprintRecalculate():
         'Wins Per Race':_winspr,
         'Podiums':_podiums,
         'Podiums Per Race':_podiumspr,
+        'World Championships':_wdc,
+        'World Championship Years':_wdcs,
+        'Best Performer':_bestPerformer,
+        'Best Rookie':_bestRookie
     }
 
     df = pd.DataFrame(data)
@@ -522,15 +589,21 @@ def sprintLoad():
     drivers = []
     df = pd.read_csv('driverDataSprint.csv')
     for index, row in df.iterrows():
-        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'])
-        list = row['Rating History'][1:-1].split(', ')
+        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'],row['Seasons'],row['World Championships'],row['Best Rookie'])
+        listH = row['Rating History'][1:-1].split(', ')
+        listWDC = row['World Championship Years'][1:-1].split(', ')
+        listBP = row['Best Performer'][1:-1].split(', ')
         history = []
-        for i in list:
+        for i in listH:
             if i == "nan":
                 history.append(np.nan)
             else:
                 history.append(float(i))
         driver.addHistory(history)
+        for i in listWDC:
+            driver.addWorldChampionship(i)
+        for i in listBP:
+            driver.addBestPerformer(i)
         drivers.append(driver)
     return drivers
 
