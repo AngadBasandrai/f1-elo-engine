@@ -112,11 +112,9 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             p = sorted(p,key = lambda x: x[1], reverse=True)
             z.write(str(y) + ": ")
             for j in p:
-                z.write(f"{j[0].name, j[1]}")
+                z.write(f"{j[0].name, j[1]}  ")
             z.write("\n")
             diff = p[0][1] - p[1][1]
-            p[0][0].worldChampionships += 1
-            p[0][0].addWorldChampionship(y)
             z.write("Lead of championship: " + str(diff) + ",\t")
             diffFromLast = p[0][1] - p[-1][1]
             z.write("Gap between first and last: " + str(diffFromLast) + ",\t")
@@ -146,6 +144,8 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                 z.write(f"Breakthrough Of The Year: {breakthroughMaxDiff[0].name}, gained {breakthroughMaxDiff[1]} rating\n\n")
             except:
                 z.write("No Breakthrough this season\n\n")
+            p[0][0].worldChampionships += 1
+            p[0][0].addWorldChampionship(y)
             y += 1
             xlabels.append((str(y)[-2:]))
             for driver in drivers:
@@ -397,4 +397,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2007,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2006,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
