@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class Driver:
-    def __init__(self, name, rating=1400,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0,seasons=0,worldChampionships=0,bestRookie=None):
+    def __init__(self, name, rating=1400,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0,seasons=0,worldChampionships=0,bestRookie=None,breakthrough = None):
         self.name = name
         self.rating = rating
         self.history = []
@@ -23,6 +23,7 @@ class Driver:
         self.worldChampionshipYear = []
         self.bestPerformer = []
         self.bestRookie = bestRookie
+        self.breakthrough = breakthrough
 
     def addHistory(self, history):
         self.history = history
@@ -90,6 +91,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             maxDiff = [None,-sys.maxsize-1]
             minDiff = ["-",-sys.maxsize-1]
             newMaxDiff = [None,-sys.maxsize-1]
+            breakthroughMaxDiff = [None,0]
             for i in range(len(drivers)):
                 try:
                     if s.index(drivers[i].name):
@@ -101,6 +103,8 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                             minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
                         if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1:
                             newMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
+                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0:
+                            breakthroughMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         drivers[i].preSeason = drivers[i].effRating()
                 except:
                     continue
@@ -132,11 +136,16 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             try:
                 newMaxDiff[0].bestRookie = y
                 if newMaxDiff[1] > 0:
-                    z.write(f"Best Rookie: {newMaxDiff[0].name}, gained {newMaxDiff[1]} rating\n\n")
+                    z.write(f"Best Rookie: {newMaxDiff[0].name}, gained {newMaxDiff[1]} rating\t")
                 else:
-                    z.write(f"Best Rookie: {newMaxDiff[0].name}, lost {-newMaxDiff[1]} rating\n\n")
+                    z.write(f"Best Rookie: {newMaxDiff[0].name}, lost {-newMaxDiff[1]} rating\t")
             except:
-                z.write("No Rookies this season\n\n")
+                z.write("No Rookies this season\t")
+            try:
+                breakthroughMaxDiff[0].breakthrough = y
+                z.write(f"Breakthrough Of The Year: {breakthroughMaxDiff[0].name}, gained {breakthroughMaxDiff[1]} rating\n\n")
+            except:
+                z.write("No Breakthrough this season\n\n")
             y += 1
             xlabels.append((str(y)[-2:]))
             for driver in drivers:
@@ -213,6 +222,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
     _wdcs = []
     _bestPerformer = []
     _bestRookie = []
+    _breakthrough = []
     for driver in drivers:
         z = driver.history
         if driver.started:
@@ -238,6 +248,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         _wdcs.append(driver.worldChampionshipYear)
         _bestPerformer.append(driver.bestPerformer)
         _bestRookie.append(driver.bestRookie)
+        _breakthrough.append(driver.breakthrough)
 
     data = {
         'Name':_names,
@@ -258,7 +269,8 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         'World Championships':_wdc,
         'World Championship Years':_wdcs,
         'Best Performer':_bestPerformer,
-        'Best Rookie':_bestRookie
+        'Best Rookie':_bestRookie,
+        'Breakthrough':_breakthrough,
     }
 
     df = pd.DataFrame(data)
@@ -294,7 +306,7 @@ def load(file_name):
     drivers = []
     df = pd.read_csv(file_name)
     for index, row in df.iterrows():
-        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'],row['Seasons'],row['World Championships'],row['Best Rookie'])
+        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'],row['Seasons'],row['World Championships'],row['Best Rookie'],row['Breakthrough Of The Year'])
         listH = row['Rating History'][1:-1].split(', ')
         listWDC = row['World Championship Years'][1:-1].split(', ')
         listBP = row['Best Performer'][1:-1].split(', ')
