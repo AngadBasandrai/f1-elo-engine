@@ -24,6 +24,20 @@ class Driver:
         self.bestPerformer = []
         self.bestRookie = bestRookie
         self.breakthrough = breakthrough
+        self.title = None
+        self.titleVal = 0
+
+    def calculateTitle(self):
+        if self.peakRating() >= 1575 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0:
+            self.title = 'Race Grand Master'
+            self.titleVal = 3
+        elif self.peakRating() >= 1525 and (self.wins >= 20 or (self.wins >= 10 and self.podiums >= 30)):
+            self.title = 'Track Master'
+            self.titleVal = 2
+        elif self.peakRating() >= 1475 and (self.wins >= 10 or (self.wins > 3 and self.podiums >= 15)):
+            self.title = 'Speed Master'
+            self.titleVal = 1
+        
 
     def addHistory(self, history):
         self.history = history
@@ -63,7 +77,10 @@ class Driver:
         return np.nanmax(self.history+[self.rating]) if self.started else 1400
     def __repr__(self):
         if self.started:
-            return self.name + ": 1400 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1400)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
+            if not self.title:
+                return self.name + ": 1400 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1400)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
+            else:
+                return self.name + "(" + self.title + "): 1400 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1400)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
         else:
             return self.name + ": hasn't made professional debut"
 
@@ -91,6 +108,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             newMaxDiff = [None,0]
             breakthroughMaxDiff = [None,0]
             for i in range(len(drivers)):
+                drivers[i].calculateTitle()
                 try:
                     if s.index(drivers[i].name):
                         drivers[i].seasons += 1
@@ -110,7 +128,10 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             p = sorted(p,key = lambda x: x[1], reverse=True)
             z.write(str(y) + ": ")
             for j in p:
-                z.write(f"{j[0].name, j[1]}  ")
+                if j[0].title:
+                    z.write(f"{j[0].name}({j[0].title}): {j[1]}")
+                else:
+                    z.write(f"{j[0].name}: {j[1]}")
             z.write("\n")
             diff = p[0][1] - p[1][1]
             z.write("Lead of championship: " + str(diff) + ",\t")
@@ -201,6 +222,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
     drivers = sorted(drivers, key=lambda x: x.effRating(), reverse=True)
     fig, ax = plt.subplots()
     z.close()
+    _title = []
     _names = []
     _ratingsList = []
     _ratings = []
@@ -222,12 +244,14 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
     _bestRookie = []
     _breakthrough = []
     _peak = []
+    _titleVal = []
     for driver in drivers:
         z = driver.history
         if driver.started:
             if not driver.retired:
                 z.append(driver.rating)
             ax.plot(z, label = driver.name)
+        _title.append(driver.title)
         _names.append(driver.name)
         _ratingsList.append(z)
         _ratings.append(driver.effRating())
@@ -249,7 +273,9 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         _bestRookie.append(driver.bestRookie)
         _breakthrough.append(driver.breakthrough)
         _peak.append(driver.peakRating())
+        _titleVal.append(driver.titleVal)
     data = {
+        'Title':_title,
         'Name':_names,
         'Rating History':_ratingsList,
         'Rating':_ratings,
@@ -270,7 +296,8 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         'Best Performer':_bestPerformer,
         'Best Rookie':_bestRookie,
         'Breakthrough':_breakthrough,
-        'Peak':_peak
+        'Peak':_peak,
+        '_':_titleVal,
     }
 
     df = pd.DataFrame(data)
