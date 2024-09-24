@@ -88,7 +88,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         if s[0] == "--":
             maxDiff = [None,-sys.maxsize-1]
             minDiff = ["-",-sys.maxsize-1]
-            newMaxDiff = [None,-sys.maxsize-1]
+            newMaxDiff = [None,0]
             breakthroughMaxDiff = [None,0]
             for i in range(len(drivers)):
                 try:
@@ -221,6 +221,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
     _bestPerformer = []
     _bestRookie = []
     _breakthrough = []
+    _peak = []
     for driver in drivers:
         z = driver.history
         if driver.started:
@@ -247,7 +248,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         _bestPerformer.append(driver.bestPerformer)
         _bestRookie.append(driver.bestRookie)
         _breakthrough.append(driver.breakthrough)
-
+        _peak.append(driver.peakRating())
     data = {
         'Name':_names,
         'Rating History':_ratingsList,
@@ -269,6 +270,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
         'Best Performer':_bestPerformer,
         'Best Rookie':_bestRookie,
         'Breakthrough':_breakthrough,
+        'Peak':_peak
     }
 
     df = pd.DataFrame(data)
@@ -395,4 +397,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2005,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2004,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
