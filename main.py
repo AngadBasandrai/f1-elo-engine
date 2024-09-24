@@ -40,8 +40,6 @@ class Driver:
                     self.buffer = self.rating + (scored-(expected)) * 2 * k
                 else:
                     self.buffer = self.rating + (scored-(expected)) * k
-            elif self.rating > 1600:
-                self.buffer = self.rating + (scored-(expected)) * 0.5 * k
             else:
                 self.buffer = self.rating + (scored-(expected)) * k
             if self.buffer < 1000:
@@ -397,4 +395,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2006,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2005,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
