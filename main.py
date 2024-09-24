@@ -366,7 +366,7 @@ def show(file_name_data,file_name_lables):
     x = np.arange(0,len(xlabels),1)
     ax.set_xticks(x)
     ax.set_xticklabels(xlabels)
-    plt.legend(loc="lower right",bbox_to_anchor=(1.1, -0.1), fontsize="5")
+    plt.legend(loc="lower right",bbox_to_anchor=(1.1, -0.1), fontsize="4")
     ax = plt.gca()
 
     for tick in ax.get_yticks():
@@ -397,4 +397,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2004,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2003,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
