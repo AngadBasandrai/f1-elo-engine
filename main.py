@@ -99,9 +99,9 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                             maxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         if drivers[i].preSeason - drivers[i].effRating() > minDiff[1]:
                             minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
-                        if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1:
+                        if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1 and drivers[i].races >= 5:
                             newMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
-                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0:
+                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0 and drivers[i].races >= 5:
                             breakthroughMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         drivers[i].preSeason = drivers[i].effRating()
                 except:
