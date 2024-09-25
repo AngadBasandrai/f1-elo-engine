@@ -28,13 +28,16 @@ class Driver:
         self.titleVal = 0
 
     def calculateTitle(self):
-        if self.peakRating() >= 1575 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0:
-            self.title = 'Race Grand Master'
+        if self.peakRating() >= 1600 and self.worldChampionships >= 2 and self.wins >= 30 and self.podiums >= 50 and len(self.bestPerformer) > 0:
+            self.title = 'Grand Master'
+            self.titleVal = 4
+        elif self.peakRating() >= 1555 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0:
+            self.title = 'Race Master'
             self.titleVal = 3
-        elif self.peakRating() >= 1525 and (self.wins >= 20 or (self.wins >= 10 and self.podiums >= 30)):
+        elif (self.peakRating() >= 1500 and (self.wins >= 20 or (self.wins >= 10 and self.podiums >= 30))) or self.worldChampionships >= 1:
             self.title = 'Track Master'
             self.titleVal = 2
-        elif self.peakRating() >= 1475 and (self.wins >= 10 or (self.wins > 3 and self.podiums >= 15)):
+        elif (self.peakRating() >= 1450 and (self.wins >= 10 or (self.wins > 3 and self.podiums >= 15))) or len(self.bestPerformer) > 0:
             self.title = 'Speed Master'
             self.titleVal = 1
         
@@ -424,4 +427,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2003,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2002,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
