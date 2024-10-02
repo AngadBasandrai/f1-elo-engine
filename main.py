@@ -31,7 +31,7 @@ class Driver:
         if self.peakRating() >= 1600 and self.worldChampionships >= 2 and self.wins >= 30 and self.podiums >= 50 and len(self.bestPerformer) > 0:
             self.title = 'Grand Master'
             self.titleVal = 4
-        elif self.peakRating() >= 1555 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0:
+        elif self.peakRating() >= 1550 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0:
             self.title = 'Race Master'
             self.titleVal = 3
         elif (self.peakRating() >= 1500 and (self.wins >= 20 or (self.wins >= 10 and self.podiums >= 30))) or self.worldChampionships >= 1:
@@ -53,12 +53,18 @@ class Driver:
     
     def ratingAdjust(self, scored, expected, k = 1):
             if self.races <= 10:
-                if scored-expected > 0:
-                    self.buffer = self.rating + (scored-(expected)) * 2 * k
+                if scored - expected > 0:
+                    if expected > 0:
+                        self.buffer = self.rating + (scored-(expected/2)) * 2 * k
+                    else:
+                        self.buffer = self.rating + (scored-(expected)) * 2 * k
                 else:
                     self.buffer = self.rating + (scored-(expected)) * k
             else:
-                self.buffer = self.rating + (scored-(expected)) * k
+                if (scored-(expected)) * k > 0 and (scored-(expected)) * k < 1:
+                    self.buffer = self.rating + 1
+                else:
+                    self.buffer = self.rating + (scored-(expected)) * k
             if self.buffer < 1000:
                 self.buffer = 1000
     def upload(self):
@@ -122,7 +128,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                             minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
                         if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1 and drivers[i].races >= 5:
                             newMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
-                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0 and drivers[i].races >= 5:
+                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0 and drivers[i].races >= 5-((drivers[i].seasons-1)*5):
                             breakthroughMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         drivers[i].preSeason = drivers[i].effRating()
                 except:
@@ -132,9 +138,9 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             z.write(str(y) + ": ")
             for j in p:
                 if j[0].title:
-                    z.write(f"{j[0].name}({j[0].title}): {j[1]}")
+                    z.write(f"{j[0].name}({j[0].title}): {j[1]},")
                 else:
-                    z.write(f"{j[0].name}: {j[1]}")
+                    z.write(f"{j[0].name}: {j[1]},")
             z.write("\n")
             diff = p[0][1] - p[1][1]
             z.write("Lead of championship: " + str(diff) + ",\t")
@@ -427,4 +433,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2002,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2001,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
