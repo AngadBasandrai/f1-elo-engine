@@ -28,10 +28,10 @@ class Driver:
         self.titleVal = 0
 
     def calculateTitle(self):
-        if self.peakRating() >= 1600 and self.worldChampionships >= 2 and self.wins >= 30 and self.podiums >= 50 and len(self.bestPerformer) > 0:
+        if (self.peakRating() >= 1600 and self.worldChampionships >= 2 and self.wins >= 30 and self.podiums >= 50 and len(self.bestPerformer) > 0) or self.worldChampionships >= 3:
             self.title = 'Grand Master'
             self.titleVal = 4
-        elif self.peakRating() >= 1550 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0:
+        elif (self.peakRating() >= 1550 and self.worldChampionships >= 1 and (self.wins >= 30 or (self.wins >= 20 and self.podiums >= 50)) and len(self.bestPerformer) > 0) or self.worldChampionships >= 2:
             self.title = 'Race Master'
             self.titleVal = 3
         elif (self.peakRating() >= 1500 and (self.wins >= 20 or (self.wins >= 10 and self.podiums >= 30))) or self.worldChampionships >= 1:
