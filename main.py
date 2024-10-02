@@ -26,6 +26,9 @@ class Driver:
         self.breakthrough = breakthrough
         self.title = None
         self.titleVal = 0
+        self.provRating = 1400
+        self.provScore = 0
+        self.provAvgRating = 0
 
     def calculateTitle(self):
         if (self.peakRating() >= 1600 and self.worldChampionships >= 2 and self.wins >= 30 and self.podiums >= 50 and len(self.bestPerformer) > 0) or self.worldChampionships >= 3:
@@ -37,7 +40,7 @@ class Driver:
         elif (self.peakRating() >= 1500 and (self.wins >= 20 or (self.wins >= 10 and self.podiums >= 30))) or self.worldChampionships >= 1:
             self.title = 'Track Master'
             self.titleVal = 2
-        elif (self.peakRating() >= 1450 and (self.wins >= 10 or (self.wins > 3 and self.podiums >= 15))) or len(self.bestPerformer) > 0:
+        elif self.peakRating() >= 1450 and (self.wins >= 10 or (self.wins > 3 and self.podiums >= 15)):
             self.title = 'Speed Master'
             self.titleVal = 1
         
@@ -51,35 +54,36 @@ class Driver:
     def addWorldChampionship(self, year):
         self.worldChampionshipYear.append(year)
     
-    def ratingAdjust(self, scored, expected, k = 1):
-            if self.races <= 10:
-                if scored - expected > 0:
-                    if expected > 0:
-                        self.buffer = self.rating + (scored-(expected/2)) * 2 * k
-                    else:
-                        self.buffer = self.rating + (scored-(expected)) * 2 * k
-                else:
-                    self.buffer = self.rating + (scored-(expected)) * k
+    def ratingAdjust(self, scored, expected, k = 1, avgRating = 1400):
+            if self.races < 10:
+                self.provScore += (scored-expected)
+                self.provAvgRating += avgRating
+                self.buffer = 1400
+            elif self.races == 10:
+                self.provScore += (scored-expected)
+                self.provAvgRating += avgRating
+                self.buffer = (self.provAvgRating/10) + (self.provScore)
             else:
-                if (scored-(expected)) * k > 0 and (scored-(expected)) * k < 1:
-                    self.buffer = self.rating + 1
-                else:
-                    self.buffer = self.rating + (scored-(expected)) * k
+                self.buffer = self.rating + (scored-(expected)) * k
+
             if self.buffer < 1000:
                 self.buffer = 1000
     def upload(self):
         if self.retired:
             self.history.append(np.nan)
         elif self.started:
-            self.history.append(self.rating)
-            self.rating = self.buffer
-            self.buffer = self.rating
+                self.history.append(self.rating)
+                self.rating = self.buffer
+                self.buffer = self.rating
         else:
             self.history.append(np.nan)
 
     def effRating(self):
         try:
-            return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
+            if self.races >= 10:
+                return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
+            else:
+                return 1000
         except:
             return 1400
     def peakRating(self):
@@ -89,7 +93,7 @@ class Driver:
             if not self.title:
                 return self.name + ": 1400 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1400)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
             else:
-                return self.name + "(" + self.title + "): 1400 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1400)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
+                return self.name + " (" + self.title + "): 1400 -> " + str(int(self.effRating()*10)/10) + "  ("+ str(int((self.effRating()-1400)*10)/10) +")" + "  Peak: " + str(int(self.peakRating() * 10)/10) + "  (" + str(int((self.effRating() - self.peakRating()) * 10)/10) + ")"
         else:
             return self.name + ": hasn't made professional debut"
 
@@ -207,11 +211,11 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                     for q in range(len(ratings)):
                         if ratings[q] <= drivers[i].rating:
                             break
-                    expected = (((1/(1+(10**((oppAvg - drivers[i].rating)/200))))*2)-1)*points[0]
+                    expected = (((1/(1+(10**((oppAvg - drivers[i].rating)/260))))*2)-1)*points[0]
                     score = points[s.index(drivers[i].name)]
                     drivers[i].started = True
                     drivers[i].races += 1
-                    drivers[i].ratingAdjust(score, expected,k)
+                    drivers[i].ratingAdjust(score, expected,k,oppAvg)
                     drivers[i].points += score
                     if score > 0:
                         drivers[i].championshipPoints += score
