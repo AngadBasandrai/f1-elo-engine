@@ -29,6 +29,7 @@ class Driver:
         self.provRating = 1400
         self.provScore = 0
         self.provAvgRating = 0
+        self.provHistory = []
 
     def calculateTitle(self):
         if (self.peakRating() >= 1600 and self.worldChampionships >= 2 and self.wins >= 30 and self.podiums >= 50 and len(self.bestPerformer) > 0) or self.worldChampionships >= 3:
@@ -47,6 +48,9 @@ class Driver:
 
     def addHistory(self, history):
         self.history = history
+
+    def addProvHistory(self, phistory):
+        self.provHistory = phistory
     
     def addBestPerformer(self, year):
         self.bestPerformer.append(year)
@@ -55,14 +59,17 @@ class Driver:
         self.worldChampionshipYear.append(year)
     
     def ratingAdjust(self, scored, expected, k = 1, avgRating = 1400):
-            if self.races < 10:
+            if self.races < 5:
                 self.provScore += (scored-expected)
                 self.provAvgRating += avgRating
                 self.buffer = 1400
-            elif self.races == 10:
+            elif self.races == 5:
                 self.provScore += (scored-expected)
                 self.provAvgRating += avgRating
-                self.buffer = (self.provAvgRating/10) + (self.provScore)
+                if self.provScore > 0: 
+                    self.buffer = (self.provAvgRating/5) + (self.provScore*2)
+                else:
+                    self.buffer = (self.provAvgRating/5) + (self.provScore)
             else:
                 self.buffer = self.rating + (scored-(expected)) * k
 
@@ -71,16 +78,33 @@ class Driver:
     def upload(self):
         if self.retired:
             self.history.append(np.nan)
+            self.provHistory.append(np.nan)
         elif self.started:
+            if self.races <= 5:
+                self.history.append(np.nan)
+                if self.provScore > 0: 
+                    self.provHistory.append((self.provAvgRating/self.races) + (self.provScore*10/self.races))
+                else:
+                    self.provHistory.append((self.provAvgRating/self.races) + (self.provScore*5/self.races))
+                self.rating = self.buffer
+                self.buffer = self.rating
+            elif self.races == 6:
+                self.provHistory.append(self.rating)
                 self.history.append(self.rating)
+                self.rating = self.buffer
+                self.buffer = self.rating
+            else:
+                self.history.append(self.rating)
+                self.provHistory.append(np.nan)
                 self.rating = self.buffer
                 self.buffer = self.rating
         else:
             self.history.append(np.nan)
+            self.provHistory.append(np.nan)
 
     def effRating(self):
         try:
-            if self.races >= 10:
+            if self.races >= 5:
                 return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
             else:
                 return 1000
@@ -132,7 +156,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                             minDiff = [drivers[i].name, drivers[i].preSeason - drivers[i].effRating()]
                         if drivers[i].effRating() - drivers[i].preSeason > newMaxDiff[1] and drivers[i].seasons == 1 and drivers[i].races >= 5:
                             newMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
-                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0 and drivers[i].races >= 5-((drivers[i].seasons-1)*5):
+                        if drivers[i].effRating() - drivers[i].preSeason > breakthroughMaxDiff[1] and drivers[i].seasons <= 4 and drivers[i].worldChampionships == 0 and drivers[i].races >= 5:
                             breakthroughMaxDiff = [drivers[i], drivers[i].effRating() - drivers[i].preSeason]
                         drivers[i].preSeason = drivers[i].effRating()
                 except:
@@ -186,7 +210,6 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             for i in range(len(drivers)):
                 try:
                     if s.index(drivers[i].name):
-                        print(drivers[i].name + " has retired")
                         drivers[i].upload()
                         drivers[i].retired = True
                 except:
@@ -260,10 +283,16 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
     _titleVal = []
     for driver in drivers:
         z = driver.history
+        l = driver.provHistory
         if driver.started:
             if not driver.retired:
                 z.append(driver.rating)
-            ax.plot(z, label = driver.name)
+                if driver.races >= 5:
+                    l.append(np.nan)
+                else:
+                    l.append(driver.rating) 
+            n = ax.plot(z, label = driver.name)
+            ax.plot(l, linestyle = "--", color = n[0].get_color())
         _title.append(driver.title)
         _names.append(driver.name)
         _ratingsList.append(z)
@@ -343,6 +372,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
     f.close()
 
 def load(file_name):
+    ### TODO: save and load provisional data
     drivers = []
     df = pd.read_csv(file_name)
     for index, row in df.iterrows():
@@ -387,18 +417,28 @@ def show(file_name_data,file_name_lables):
     if len(toView) == 1 and toView[0] == '':
         for driver in drivers:
             z = driver.history
+            l = driver.provHistory
             if driver.started:
                 if not driver.retired:
                     z.append(driver.rating)
-                ax.plot(z, label = driver.name)
+                    if driver.races >= 5:
+                        l.append(np.nan)
+                    else:
+                        l.append(driver.rating)
+                n = ax.plot(z, label = driver.name)
+                ax.plot(l, color = n[0].get_color())
     else:
         for driver in drivers:
             if driver.name in toView:
                 z = driver.history
                 if driver.started:
                     if not driver.retired:
-                        z.append(driver.rating)
-                    ax.plot(z, label = driver.name)
+                        if driver.races >= 5:
+                            l.append(np.nan)
+                        else:
+                            l.append(driver.rating)
+                    n = ax.plot(z, label = driver.name)
+                    ax.plot(l, color = n[0].get_color())
 
     plt.xlabel('races')
     plt.ylabel('elo')
@@ -437,4 +477,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2001,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2000,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
