@@ -110,6 +110,7 @@ class Driver:
                 return 1000
         except:
             return 1400
+        
     def peakRating(self):
         return np.nanmax(self.history+[self.rating]) if self.started else 1400
     def __repr__(self):
@@ -206,6 +207,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             xlabels.append((str(y)[-2:]))
             for driver in drivers:
                 driver.upload()
+                driver.calculateTitle()
         elif s[0] == "~":
             for i in range(len(drivers)):
                 try:
@@ -477,4 +479,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',2000,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
+        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-28,-29,-30],'drivers.csv',1999,'winners.txt','data.csv','xlabels.csv','driverData.csv',1)
