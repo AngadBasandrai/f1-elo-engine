@@ -5,7 +5,7 @@ import argparse
 import sys
 
 class Driver:
-    def __init__(self, name, rating=1600,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0,seasons=0,worldChampionships=0,bestRookie=None,breakthrough = None,provAvgRating=0,provScore=0,provRaces=5):
+    def __init__(self, name, rating=1400,started=False,retired=False,races=0,points = 0,championshipPoints=0,wins=0,podiums=0,seasons=0,worldChampionships=0,bestRookie=None,breakthrough = None,provAvgRating=0,provScore=0,provRaces=5, minSeasonraces=5):
         self.name = name
         self.rating = rating
         self.history = []
@@ -13,7 +13,7 @@ class Driver:
         self.started = started
         self.retired = retired
         self.races = races
-        self.preSeason = 1600
+        self.preSeason = 1400
         self.points = points
         self.championshipPoints = championshipPoints
         self.wins = wins
@@ -24,12 +24,13 @@ class Driver:
         self.bestPerformer = []
         self.bestRookie = bestRookie
         self.breakthrough = breakthrough
-        self.provRating = 1600
+        self.provRating = 1400
         self.provScore = provScore
         self.provAvgRating = provAvgRating
         self.provHistory = []        
         self.provRaces = provRaces
         self.seasonRaces = 0
+        self.minSeasonraces = minSeasonraces
 
     def addHistory(self, history):
         self.history = history
@@ -46,11 +47,11 @@ class Driver:
     def addWorldChampionship(self, year):
         self.worldChampionshipYear.append(year)
     
-    def ratingAdjust(self, scored, expected, k = 1, avgRating = 1600):
+    def ratingAdjust(self, scored, expected, k = 1, avgRating = 1400):
             if self.races < self.provRaces:
                 self.provScore += (scored-expected)
                 self.provAvgRating += avgRating
-                self.buffer = 1600
+                self.buffer = 1400
             elif self.races == self.provRaces:
                 self.provScore += (scored-expected)
                 self.provAvgRating += avgRating
@@ -89,7 +90,7 @@ class Driver:
 
     def effRating(self):
         try:
-            if self.races >= self.provRaces and self.seasonRaces > 5:
+            if self.races >= self.provRaces and self.seasonRaces > self.minSeasonraces:
                 return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
             else:
                 return 1000
@@ -105,12 +106,12 @@ class Driver:
             return self.name + ": hasn't made professional debut"
 
 
-def recalculate(points,file_drivers,start_year,file_winners,file_data,file_labels,file_driver_data,k,provRaces):
+def recalculate(points,file_drivers,start_year,file_winners,file_data,file_labels,file_driver_data,k,provRaces,minSeasonraces):
     drivers = []
     f = open(file_drivers, 'r')
     lines = f.read().split(',')
     for d in lines:
-        drivers.append(Driver(d,provRaces=provRaces))
+        drivers.append(Driver(d,provRaces=provRaces,minSeasonraces=minSeasonraces))
     f.close()
 
     y = start_year
@@ -198,6 +199,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             if ny:
                 ny = False
             xlabels.append('')
+            driversInRace = len(s)-1
             for i in range(len(drivers)):
                 try:
                     ratings = []
@@ -214,8 +216,13 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
                     for q in range(len(ratings)):
                         if ratings[q] <= drivers[i].rating:
                             break
-                    expected = (((1/(1+(10**((oppAvg - drivers[i].rating)/150))))*2)-1)*points[0]
-                    score = points[s.index(drivers[i].name)]
+                    expected = (((1/(1+(10**((oppAvg - drivers[i].rating)/154))))*2)-1)*points[0]
+                    if s.index(drivers[i].name) < 10:
+                        score = points[s.index(drivers[i].name)]
+                    elif s.index(drivers[i].name) >= driversInRace-10:
+                        score = -points[driversInRace - s.index(drivers[i].name) - 1]-1
+                    else:
+                        score = 0
                     drivers[i].started = True
                     drivers[i].races += 1
                     drivers[i].seasonRaces += 1
@@ -358,11 +365,11 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
 
     f.close()
 
-def load(file_name, provRaces):
+def load(file_name, provRaces,minSeasonraces):
     drivers = []
     df = pd.read_csv(file_name)
     for index, row in df.iterrows():
-        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'],row['Seasons'],row['World Championships'],row['Best Rookie'],row['Breakthrough'],row['Provisional Average Ratings'],row['Provisional Score'],provRaces=provRaces)
+        driver = Driver(row['Name'], row['Rating'], row['Started'], row['Retired'], row['Races'], row['Points'], row['Championship Points'], row['Wins'], row['Podiums'],row['Seasons'],row['World Championships'],row['Best Rookie'],row['Breakthrough'],row['Provisional Average Ratings'],row['Provisional Score'],provRaces=provRaces,minSeasonraces=minSeasonraces)
         listH = row['Rating History'][1:-1].split(', ')
         listPH = row['Provisional Rating History'][1:-1].split(', ')
         listWDC = row['World Championship Years'][1:-1].split(', ')
@@ -388,8 +395,8 @@ def load(file_name, provRaces):
         drivers.append(driver)
     return drivers
 
-def show(file_name_data,file_name_lables,provRaces):
-    drivers = load(file_name_data,provRaces)
+def show(file_name_data,file_name_lables,provRaces,minSeasonraces):
+    drivers = load(file_name_data,provRaces,minSeasonraces)
     xlabelsfile = open(file_name_lables, 'r')
     xlabels = xlabelsfile.read()
     xlabelsfile.close()
@@ -467,10 +474,10 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     if args.load:
-        show('driverData.csv','xlabels.csv',5)
+        show('driverData.csv','xlabels.csv',5,5)
     if args.load_sprint:
-        show('driverDataSprint.csv','xlabelssprint.csv',0)
+        show('driverDataSprint.csv','xlabelssprint.csv',0,2)
     if args.calculate_sprint:
-        recalculate([8,7,6,5,4,3,2,1,0,0,0,0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5,0)
+        recalculate([8,7,6,5,4,3,2,1,0,0],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5,0,2)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1,-1,-2,-4,-6,-8,-10,-12,-15,-18,-25,-26,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27,-27],'drivers.csv',1990,'winners.txt','data.csv','xlabels.csv','driverData.csv',1,5)
+        recalculate([25,18,15,12,10,8,6,4,2,1],'drivers.csv',1989,'winners.txt','data.csv','xlabels.csv','driverData.csv',1,5,5)
