@@ -97,6 +97,15 @@ class Driver:
         except:
             return 1000
         
+    def effRatingEndCalculation(self):
+        try:
+            if self.races >= self.provRaces:
+                return self.buffer if not self.retired else self.history[np.where(~np.isnan(self.history) == True)[0][-1]]
+            else:
+                return 1000
+        except:
+            return 1000
+        
     def peakRating(self):
         return np.nanmax(self.history+[self.rating]) if self.started and self.races > self.provRaces else 1000
     def __repr__(self):
@@ -285,7 +294,7 @@ def recalculate(points,file_drivers,start_year,file_winners,file_data,file_label
             ax.plot(l, linestyle = "--", color = n[0].get_color())
         _names.append(driver.name)
         _ratingsList.append(z)
-        _ratings.append(driver.effRating())
+        _ratings.append(driver.effRatingEndCalculation())
         _started.append(driver.started)
         _retired.append(driver.retired)
         _races.append(driver.races)
@@ -480,4 +489,4 @@ if __name__ == "__main__":
     if args.calculate_sprint:
         recalculate([8,7,6,5,4,3,2,1,0,0],'driverssprint.csv',2021,'winnerssprint.txt','datasprint.csv','xlabelssprint.csv','driverDataSprint.csv',5,0,2)
     elif args.calculate or not any(vars(args).values()):
-        recalculate([25,18,15,12,10,8,6,4,2,1],'drivers.csv',1989,'winners.txt','data.csv','xlabels.csv','driverData.csv',1,5,5)
+        recalculate([25,18,15,12,10,8,6,4,2,1],'drivers.csv',1987,'winners.txt','data.csv','xlabels.csv','driverData.csv',1,5,5)
